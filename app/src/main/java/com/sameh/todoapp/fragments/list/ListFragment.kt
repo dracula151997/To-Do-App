@@ -153,8 +153,15 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
     private fun searchFromDatabase(query: String) {
         val searchQuery = "%$query%"
 
-        toDoViewModel.searchOnDatabase(searchQuery).observe(viewLifecycleOwner) {
-            recyclerViewAdapter.setToDoList(it)
+        if (query.isEmpty()) {
+            toDoViewModel.getAllData.observe(viewLifecycleOwner) {
+                recyclerViewAdapter.setToDoList(it)
+                return@observe
+            }
+        } else {
+            toDoViewModel.searchOnDatabase(searchQuery).observe(viewLifecycleOwner) {
+                recyclerViewAdapter.setToDoList(it)
+            }
         }
     }
 
@@ -177,7 +184,10 @@ class ListFragment : Fragment(), SearchView.OnQueryTextListener {
                 val itemToDelete = recyclerViewAdapter.toDoDataList[viewHolder.adapterPosition]
                 toDoViewModel.deleteData(itemToDelete)
                 recyclerViewAdapter.notifyItemRemoved(viewHolder.adapterPosition)
-
+                recyclerViewAdapter.notifyItemRangeRemoved(
+                    0,
+                    recyclerViewAdapter.toDoDataList.size - 1
+                )
                 restoreDeletedData(viewHolder.itemView, itemToDelete)
             }
         }
